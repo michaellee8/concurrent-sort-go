@@ -12,11 +12,13 @@ import (
 
 // Injectors from wire.go:
 
-func InitializeDataGenerator() (*datagen.DataGenerator, error) {
-	logger, err := NewLogger()
+func InitializeDataGenerator() (*datagen.DataGenerator, func(), error) {
+	logger, cleanup, err := NewLogger()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	dataGenerator := datagen.NewDataGenerator(logger)
-	return dataGenerator, nil
+	return dataGenerator, func() {
+		cleanup()
+	}, nil
 }

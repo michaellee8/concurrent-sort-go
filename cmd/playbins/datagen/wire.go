@@ -8,10 +8,10 @@ import (
 	"github.com/michaellee8/concurrent-sort-go/pkg/datagen"
 )
 
-func InitializeDataGenerator() (*datagen.DataGenerator, error) {
+func InitializeDataGenerator() (*datagen.DataGenerator, func(), error) {
 	wire.Build(
 		NewLogger,
 		datagen.NewDataGenerator,
 	)
-	return &datagen.DataGenerator{}, nil
+	return &datagen.DataGenerator{}, nil, nil
 }

@@ -6,8 +6,17 @@ import (
 	"go.uber.org/zap"
 )
 
-func NewLogger() (*zap.Logger, error) {
-	return zap.NewProduction()
+func NewLogger() (*zap.Logger, func(), error) {
+	prodConfig := zap.NewProductionConfig()
+	prodConfig.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+	logger, err := prodConfig.Build()
+	if err != nil {
+		return nil, nil, err
+	}
+	cleanup := func() {
+		_ = logger.Sync()
+	}
+	return logger, cleanup, nil
 }
 
 func main() {
@@ -22,10 +31,11 @@ func main() {
 		flag.PrintDefaults()
 		return
 	}
-	dg, err := InitializeDataGenerator()
+	dg, cleanup, err := InitializeDataGenerator()
 	if err != nil {
 		panic(err)
 	}
+	defer cleanup()
 	err = dg.GenerateData(context.TODO(), targetDir, numFiles)
 	if err != nil {
 		panic(err)

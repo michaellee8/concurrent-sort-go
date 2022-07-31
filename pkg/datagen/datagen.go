@@ -49,16 +49,25 @@ func (dg *DataGenerator) GenerateData(
 	// so that we can avoid thrashing and memory allocation/reallocation.
 	numsMemPool := sync.Pool{
 		New: func() any {
+			dg.logger.Debug("New nums allocated")
 			return make([]int64, numOfInt64PerFile)
 		},
 	}
 	for i := 0; i < maxConcurrentFiles; i++ {
+		dg.logger.Debug(
+			"nums being prepared and put into numsMemPool",
+			zap.Int("i", i),
+		)
 		numsMemPool.Put(make([]int64, numOfInt64PerFile))
 	}
 	rand.Seed(time.Now().UnixNano())
 	for fileIdx := 0; fileIdx < numFiles; fileIdx++ {
 		currentFileIdx := fileIdx
 		errGp.Go(func() (err error) {
+			dg.logger.Debug(
+				"file generation started",
+				zap.Int("currentFileIdx", currentFileIdx),
+			)
 			nums := numsMemPool.Get().([]int64)
 			// Make sure it is put back after usage.
 			defer numsMemPool.Put(nums)
@@ -80,6 +89,10 @@ func (dg *DataGenerator) GenerateData(
 					return errors.Wrap(err, "cannot write to file")
 				}
 			}
+			dg.logger.Debug(
+				"file generation ended",
+				zap.Int("currentFileIdx", currentFileIdx),
+			)
 			return nil
 		})
 	}
