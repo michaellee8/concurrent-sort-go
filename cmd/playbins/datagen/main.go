@@ -43,7 +43,7 @@ func main() {
 		flag.PrintDefaults()
 		return
 	}
-	defer profile.Start(profile.MemProfileHeap).Stop()
+	defer profile.Start(profile.MemProfileAllocs).Stop()
 	dg, cleanup, err := InitializeDataGenerator()
 	if err != nil {
 		panic(err)
